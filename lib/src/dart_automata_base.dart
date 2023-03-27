@@ -8,11 +8,12 @@ class Awesome {
 /// Log probability using the tropical semiring
 class LogProb {
 
-  /// Floating point value representing a log probability in the range \[-∞, 0.0\]
+  /// Log probability value in the range \[-∞, 0.0\]
   final double value;
 
-  /// Constructs a log probability from the provided floating point value
-  LogProb(double value) : value = (value > 0.0) ? 0.0 / 0.0 : value;
+  /// Constructs a log probability from the provided floating point value.
+  /// If the provided [value] is positive, the resuting [LogProb.value] will be [NaN].
+  LogProb(double value) : value = (value > 0.0) ? NaN.value : value;
 
   /// Tropical semiring additive identity is `0.0`
   static final additive_identity = LogProb(0.0);
@@ -20,9 +21,10 @@ class LogProb {
   /// Tropical semiring multiplicative identity is `-∞`
   static final multiplicative_identity = LogProb(-1.0 / 0.0);
 
+  /// Not a number. If a positive number is provided to the [LogProb()] constructor, this is the resulting value.
   static final NaN = LogProb(0.0 / 0.0);
   
-  
+  /// Constructs a log probability equivalent to the probability `1.0`
   LogProb.probabilityOne() : value = 0.0;
 
   @override
@@ -36,7 +38,7 @@ class LogProb {
   /// Returns the result of performing tropical addition,
   ///   which is `max()`
   LogProb operator +(LogProb other) {
-    if (this.isNaN | other.isNaN) {
+    if (this.isNaN || other.isNaN) {
       return LogProb(NaN.value);
     } else if (this.value >= other.value) {
       return LogProb(this.value);
@@ -51,6 +53,7 @@ class LogProb {
     return LogProb(this.value + other.value);
   }
 
+  /// Whether the [LogProb.value] is not a number
   bool get isNaN => this.value.isNaN;
 
   
@@ -64,14 +67,18 @@ class LogProb {
   
 }
 
-class Label {
+class Arc {
 
-  final List<String> value;
+  final List<String> label;
 
   final LogProb logProb;
 
-  Label(this.value, this.logProb);
+  Arc(this.label, this.logProb);
 
+  Arc.acceptorArc(String label, [double? logProb])
+  : label = [label]
+  , logProb = (logProb == null) ? LogProb.probabilityOne() : LogProb(logProb!);
+  
 }
 
 
