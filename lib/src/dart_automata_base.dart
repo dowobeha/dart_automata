@@ -5,15 +5,24 @@ class Awesome {
   bool get isAwesome => true;
 }
 
-
+/// Log probability using the tropical semiring
 class LogProb {
+
+  /// Floating point value representing a log probability in the range \[-∞, 0.0\]
   final double value;
 
-  LogProb(this.value);
+  /// Constructs a log probability from the provided floating point value
+  LogProb(double value) : value = (value > 0.0) ? 0.0 / 0.0 : value;
 
-  static final additive_identity = LogProb(0.0);  // zero
-  static final multiplicative_identity = LogProb(-1.0 / 0.0); // -inf
+  /// Tropical semiring additive identity is `0.0`
+  static final additive_identity = LogProb(0.0);
 
+  /// Tropical semiring multiplicative identity is `-∞`
+  static final multiplicative_identity = LogProb(-1.0 / 0.0);
+
+  static final NaN = LogProb(0.0 / 0.0);
+  
+  
   LogProb.probabilityOne() : value = 0.0;
 
   @override
@@ -23,21 +32,34 @@ class LogProb {
 
   @override
   int get hashCode => this.value.hashCode;
-  
+
+  /// Returns the result of performing tropical addition,
+  ///   which is `max()`
   LogProb operator +(LogProb other) {
-    if (this.value >= other.value) {
+    if (this.isNaN | other.isNaN) {
+      return LogProb(NaN.value);
+    } else if (this.value >= other.value) {
       return LogProb(this.value);
     } else {
       return LogProb(other.value);
     }
   }
 
+  /// Returns the result of performing tropical multiplication,
+  ///   which is floating point addition.
   LogProb operator *(LogProb other) {
     return LogProb(this.value + other.value);
   }
 
+  bool get isNaN => this.value.isNaN;
+
+  
   String toString() {
-    return this.value.toString();
+    if (this.value == LogProb.multiplicative_identity.value) {
+      return "-∞";
+    } else {
+      return this.value.toString();
+    }
   }
   
 }
